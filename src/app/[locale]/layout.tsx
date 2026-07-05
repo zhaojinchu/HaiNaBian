@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { Footer } from "@/components/layout/Footer";
 import { Header } from "@/components/layout/Header";
 import { routing } from "@/i18n/routing";
+import "@fontsource/ma-shan-zheng";
 import "../globals.css";
 
 export const metadata: Metadata = {

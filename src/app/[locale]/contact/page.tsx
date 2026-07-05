@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Mail, MapPin, MessageSquareText, Phone } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHero } from "@/components/sections/PageHero";
-import { ContactForm } from "@/components/forms/ContactForm";
 import { createPageMetadata } from "@/lib/metadata";
 import { siteContent } from "@/content/site";
 import type { AppLocale } from "@/i18n/routing";
@@ -18,30 +17,37 @@ export default async function ContactPage({ params }: PageProps) {
   setRequestLocale(locale);
   const t = await getTranslations("Contact");
   const details = [
-    [Mail, siteContent.email],
-    [Phone, siteContent.phone],
-    [MessageSquareText, siteContent.wechat],
-    [MapPin, siteContent.location[locale]],
+    [Phone, t("phone"), siteContent.phone[locale]],
+    [MessageSquareText, t("wechat"), siteContent.wechat[locale]],
+    [Mail, t("email"), siteContent.email[locale]],
   ] as const;
 
   return (
     <>
       <PageHero eyebrow={t("eyebrow")} title={t("title")} intro={t("intro")} />
       <section className="section">
-        <div className="shell grid gap-10 lg:grid-cols-[1.35fr_0.65fr]">
-          <ContactForm />
-          <aside className="h-fit rounded-[1.5rem] border border-line bg-paper-deep/70 p-6 lg:sticky lg:top-28">
-            <h2 className="font-display text-2xl font-semibold">{t("detailsTitle")}</h2>
-            <p className="mt-3 text-sm leading-7 text-ink-soft">{t("detailsText")}</p>
-            <ul className="mt-6 space-y-4">
-              {details.map(([Icon, value]) => (
-                <li key={value} className="flex items-start gap-3 text-sm">
-                  <Icon className="mt-0.5 size-4 shrink-0 text-accent" aria-hidden="true" />
-                  <span>{value}</span>
-                </li>
-              ))}
-            </ul>
-          </aside>
+        <div className="shell max-w-4xl">
+          <div className="grid gap-5 md:grid-cols-3">
+            {details.map(([Icon, label, value]) => (
+              <article key={label} className="rounded-[1.5rem] border border-line bg-white-soft p-6">
+                <span className="grid size-11 place-items-center rounded-full bg-accent-pale">
+                  <Icon className="size-5 text-accent-dark" strokeWidth={1.5} aria-hidden="true" />
+                </span>
+                <h2 className="mt-5 font-display text-xl font-semibold">{label}</h2>
+                <p className="mt-2 break-words text-sm leading-7 text-ink-soft">{value}</p>
+              </article>
+            ))}
+          </div>
+          <div className="mt-6 flex items-start gap-4 rounded-2xl border border-line bg-paper-deep/70 p-5">
+            <MapPin className="mt-0.5 size-5 shrink-0 text-accent" aria-hidden="true" />
+            <div>
+              <h2 className="font-semibold">{t("location")}</h2>
+              <p className="mt-1 text-sm text-ink-soft">{siteContent.location[locale]}</p>
+            </div>
+          </div>
+          <p className="mx-auto mt-8 max-w-2xl text-center text-sm leading-7 text-ink-soft">
+            {t("messageHint")}
+          </p>
         </div>
       </section>
     </>

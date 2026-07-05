@@ -29,7 +29,18 @@ export default async function AboutPage({ params }: PageProps) {
 
   return (
     <>
-      <PageHero eyebrow={t("eyebrow")} title={t("title")} secondary={t("subtitle")} intro={t("intro")} />
+      <PageHero
+        eyebrow={
+          locale === "zh" ? (
+            <>关于<span className="font-brand ml-1 text-base normal-case">海那边</span></>
+          ) : (
+            <>About <span className="font-brand ml-1 text-base normal-case">海那边</span></>
+          )
+        }
+        title={t("title")}
+        secondary={t("subtitle")}
+        intro={t("intro")}
+      />
       <section className="section">
         <div className="shell grid gap-12 lg:grid-cols-[0.85fr_1.15fr]">
           <div>
@@ -65,7 +76,11 @@ export default async function AboutPage({ params }: PageProps) {
           </div>
           <div className="rounded-[1.5rem] border border-accent/25 bg-accent-pale/25 p-7 sm:p-9">
             <h2 className="font-display text-3xl font-semibold">{t("nameNoteTitle")}</h2>
-            <p className="mt-5 leading-8 text-ink-soft">{t("nameNote")}</p>
+            <p className="mt-5 leading-8 text-ink-soft">
+              {t("nameNoteBefore")}
+              <span className="font-brand text-xl text-ink">海那边</span>
+              {t("nameNoteAfter")}
+            </p>
           </div>
         </div>
       </section>

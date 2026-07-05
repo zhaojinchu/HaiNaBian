@@ -5,48 +5,37 @@ const duration = { zh: "课时待确认", en: "Duration to be confirmed" };
 
 export const pricing: PriceOption[] = [
   {
-    id: "trial",
-    name: { zh: "试听课", en: "Trial lesson" },
-    duration,
-    price: pending,
-    packageSize: { zh: "单次试听", en: "One trial session" },
-    includes: {
-      zh: ["初步程度了解", "课堂体验", "后续学习建议"],
-      en: ["Initial level review", "Lesson experience", "Next-step recommendation"],
-    },
-  },
-  {
     id: "individual",
-    name: { zh: "一对一标准课", en: "Individual lesson" },
+    name: { zh: "一对一课程", en: "One-to-one lesson" },
     duration,
     price: pending,
-    packageSize: { zh: "单节课程", en: "Single lesson" },
+    packageSize: { zh: "一名学生", en: "One learner" },
     includes: {
-      zh: ["个性化课堂内容", "学习材料说明", "阶段性反馈"],
-      en: ["Personalized content", "Learning materials guidance", "Progress feedback"],
+      zh: ["根据学生需要安排内容", "线上或老师家中授课", "学习节奏灵活调整"],
+      en: ["Content shaped around the learner", "Online or at the teacher’s home", "Flexible pace and focus"],
     },
     recommended: true,
   },
   {
-    id: "package",
-    name: { zh: "课程组合", en: "Lesson package" },
+    id: "pair",
+    name: { zh: "二对一课程", en: "Two-to-one lesson" },
     duration,
     price: pending,
-    packageSize: { zh: "课包节数待确认", en: "Package size to be confirmed" },
+    packageSize: { zh: "两名程度相近的学生", en: "Two learners at a similar level" },
     includes: {
-      zh: ["连续学习安排", "阶段目标规划", "家长沟通"],
-      en: ["Consistent schedule", "Milestone planning", "Parent communication"],
+      zh: ["适合同伴或兄弟姐妹", "线上或老师家中授课", "兼顾互动与个人指导"],
+      en: ["Suitable for friends or siblings", "Online or at the teacher’s home", "Shared practice with individual guidance"],
     },
   },
   {
-    id: "group",
-    name: { zh: "兄弟姐妹／小组课", en: "Sibling / small-group lesson" },
+    id: "small-group",
+    name: { zh: "三至四人小组课", en: "Small-group lesson" },
     duration,
     price: pending,
-    packageSize: { zh: "人数与安排待确认", en: "Group size to be confirmed" },
+    packageSize: { zh: "三至四名程度相近的学生", en: "Three to four learners at a similar level" },
     includes: {
-      zh: ["同程度学习建议", "互动练习", "具体安排需先沟通"],
-      en: ["Level matching guidance", "Interactive practice", "Arrangement by consultation"],
+      zh: ["小组互动与表达练习", "线上或老师家中授课", "具体分组由老师确认"],
+      en: ["Group interaction and speaking practice", "Online or at the teacher’s home", "Final grouping confirmed by the teacher"],
     },
   },
 ];

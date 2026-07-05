@@ -3,7 +3,7 @@ import { Info } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { PageHero } from "@/components/sections/PageHero";
 import { PricingCard } from "@/components/pricing/PricingCard";
-import { PaymentProvider } from "@/components/integrations/PaymentProvider";
+import { CallToAction } from "@/components/sections/CallToAction";
 import { pricing } from "@/content/pricing";
 import { createPageMetadata } from "@/lib/metadata";
 import type { AppLocale } from "@/i18n/routing";
@@ -18,12 +18,13 @@ export default async function PricingPage({ params }: PageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("Pricing");
+  const home = await getTranslations("Home");
 
   return (
     <>
       <PageHero eyebrow={t("eyebrow")} title={t("title")} intro={t("intro")} />
       <section className="section">
-        <div className="shell grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+        <div className="shell grid gap-5 md:grid-cols-3">
           {pricing.map((option) => (
             <PricingCard key={option.id} option={option} locale={locale} />
           ))}
@@ -38,11 +39,7 @@ export default async function PricingPage({ params }: PageProps) {
           </div>
         </div>
       </section>
-      <section className="pb-20 sm:pb-28">
-        <div className="shell">
-          <PaymentProvider />
-        </div>
-      </section>
+      <CallToAction title={home("ctaTitle")} text={home("ctaText")} />
     </>
   );
 }

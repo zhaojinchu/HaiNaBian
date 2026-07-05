@@ -14,17 +14,13 @@
 
 ## Lessons and logistics
 
-- [ ] Final lesson types
 - [ ] Accepted student ages and levels
 - [ ] Lesson durations
-- [ ] Online, in-person, or hybrid availability
 - [ ] Online teaching platform
-- [ ] Dubai teaching location and whether it may be published
+- [ ] Confirm lessons at the teacher’s home and whether the location may be published
 - [ ] Available days and hours
 - [ ] Materials used, supplied, or charged separately
-- [ ] Trial lesson format
-- [ ] Sibling and small-group availability
-- [ ] HSK levels supported
+- [ ] Confirm one-to-one, two-to-one, and groups of three to four
 
 ## Pricing and policies
 
@@ -43,9 +39,6 @@
 - [ ] Public phone or WhatsApp number
 - [ ] WeChat ID or QR code
 - [ ] Preferred contact channels and expected response window
-- [ ] Scheduling provider
-- [ ] Payment provider
-- [ ] Contact-form delivery destination
 
 ## Editorial approval
 
@@ -53,6 +46,5 @@
 - [ ] Final slogan or English brand descriptor
 - [ ] Approved explanation of the name 海那边
 - [ ] Real testimonials with written publication permission
-- [ ] Final FAQ answers
 - [ ] Domain name and canonical site URL
 - [ ] Social sharing image and favicon approval

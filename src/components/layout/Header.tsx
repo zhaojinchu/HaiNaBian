@@ -11,9 +11,7 @@ import { cn } from "@/lib/utils";
 const navItems = [
   { href: "/", key: "home" },
   { href: "/about", key: "about" },
-  { href: "/lessons", key: "lessons" },
   { href: "/pricing", key: "pricing" },
-  { href: "/faq", key: "faq" },
   { href: "/contact", key: "contact" },
 ] as const;
 
@@ -40,7 +38,7 @@ export function Header() {
             <span className="h-px w-4 -rotate-12 bg-accent" />
           </span>
           <span>
-            <span className="font-display block text-xl leading-none font-semibold tracking-[0.08em]">
+            <span className="font-brand block text-2xl leading-none tracking-[0.08em]">
               海那边
             </span>
             <span className="mt-1 block text-[0.6rem] tracking-[0.14em] text-ink-soft uppercase">
@@ -98,8 +96,8 @@ export function Header() {
               EN
             </button>
           </div>
-          <Link href="/book" className={buttonClasses("primary", "hidden xl:inline-flex")}>
-            {t("book")}
+          <Link href="/contact" className={buttonClasses("primary", "hidden xl:inline-flex")}>
+            {t("enquire")}
           </Link>
           <button
             type="button"
@@ -131,8 +129,8 @@ export function Header() {
                 {t(item.key)}
               </Link>
             ))}
-            <Link href="/book" onClick={() => setOpen(false)} className={buttonClasses("primary", "mt-3 w-full")}>
-              {t("book")}
+            <Link href="/contact" onClick={() => setOpen(false)} className={buttonClasses("primary", "mt-3 w-full")}>
+              {t("enquire")}
             </Link>
           </div>
         </nav>

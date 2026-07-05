@@ -21,13 +21,13 @@ export async function CallToAction({
             <h2 className="font-display text-3xl leading-tight font-semibold sm:text-4xl">{title}</h2>
             <p className="mt-5 max-w-xl text-paper/65">{text}</p>
             <Link
-              href="/book"
+              href="/contact"
               className={buttonClasses(
                 "secondary",
                 "mt-7 border-paper/30 text-paper hover:border-paper hover:text-paper",
               )}
             >
-              {common("book")} <ArrowRight className="size-4" />
+              {common("contact")} <ArrowRight className="size-4" />
             </Link>
           </div>
         </div>

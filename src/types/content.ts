@@ -2,16 +2,6 @@ export type Locale = "zh" | "en";
 
 export type LocalizedText = Record<Locale, string>;
 
-export interface Lesson {
-  id: string;
-  title: LocalizedText;
-  description: LocalizedText;
-  audience: LocalizedText;
-  duration: LocalizedText;
-  format: LocalizedText;
-  tags: Record<Locale, string[]>;
-}
-
 export interface PriceOption {
   id: string;
   name: LocalizedText;

@@ -29,6 +29,7 @@
   --white-soft: #fffefa;
   --font-sans: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", Inter, system-ui, sans-serif;
   --font-display: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --font-brand: "Ma Shan Zheng", "STKaiti", "Kaiti SC", "KaiTi", cursive;
 }
 
 * {
@@ -79,6 +80,11 @@ textarea {
 
 .section {
   padding-block: clamp(4.5rem, 8vw, 8rem);
+}
+
+.font-brand {
+  font-family: var(--font-brand);
+  font-weight: 400;
 }
 
 .paper-grid {

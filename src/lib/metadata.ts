@@ -5,10 +5,7 @@ import type { AppLocale } from "@/i18n/routing";
 type TitleKey =
   | "homeTitle"
   | "aboutTitle"
-  | "lessonsTitle"
   | "pricingTitle"
-  | "bookTitle"
-  | "faqTitle"
   | "contactTitle";
 
 export async function createPageMetadata(

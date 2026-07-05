@@ -39,10 +39,10 @@ export async function PricingCard({
         ))}
       </ul>
       <Link
-        href="/book"
+        href="/contact"
         className={buttonClasses(option.recommended ? "primary" : "secondary", "mt-7 w-full")}
       >
-        {t("book")}
+        {t("enquire")}
       </Link>
     </article>
   );

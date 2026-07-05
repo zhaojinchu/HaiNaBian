@@ -4,7 +4,7 @@ export function PageHero({
   intro,
   secondary,
 }: {
-  eyebrow: string;
+  eyebrow: React.ReactNode;
   title: string;
   intro: string;
   secondary?: string;

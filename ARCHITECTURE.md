@@ -4,7 +4,7 @@
 
 1. Establish locale-prefixed routing and message loading.
 2. Define global visual tokens and shared layouts.
-3. Keep editable lessons, prices, testimonials, and site facts in typed content files.
+3. Keep editable lesson formats, prices, testimonials, and site facts in typed content files.
 4. Compose every route from reusable cards, headings, calls to action, and integration boundaries.
 5. Verify localization, responsive navigation, keyboard interaction, forms, lint, types, and production build.
 
@@ -16,13 +16,9 @@
 
 Interface labels and page copy are JSON messages. Repeated business content lives in `src/content` with localized fields and TypeScript types. Prices have one source: `src/content/pricing.ts`.
 
-## Integration boundaries
-
-`BookingProvider`, `PaymentProvider`, and `ContactFormProvider` are intentionally isolated. They do not schedule, charge, or transmit data. A future hosted provider can replace the inner adapter without changing page layouts. Payment is deferred until lesson availability, policies, currency, and provider are confirmed.
-
 ## Replaceable components
 
-Image placeholders, integration providers, lesson/pricing cards, testimonials, FAQ accordion, header, and footer can be replaced independently. Page composition and locale routing should remain stable.
+Image placeholders, pricing cards, testimonials, the header, and the footer can be replaced independently. Page composition and locale routing should remain stable.
 
 ## Design system
 
