@@ -96,8 +96,8 @@ export function Header() {
               EN
             </button>
           </div>
-          <Link href="/contact" className={buttonClasses("primary", "hidden xl:inline-flex")}>
-            {t("enquire")}
+          <Link href="/account" className={buttonClasses("primary", "hidden xl:inline-flex")}>
+            {t("account")}
           </Link>
           <button
             type="button"
@@ -129,8 +129,8 @@ export function Header() {
                 {t(item.key)}
               </Link>
             ))}
-            <Link href="/contact" onClick={() => setOpen(false)} className={buttonClasses("primary", "mt-3 w-full")}>
-              {t("enquire")}
+            <Link href="/account" onClick={() => setOpen(false)} className={buttonClasses("primary", "mt-3 w-full")}>
+              {t("account")}
             </Link>
           </div>
         </nav>
