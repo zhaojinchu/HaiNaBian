@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#f8f6f0"/>
+  <circle cx="1010" cy="110" r="280" fill="#dfe8ea" opacity=".7"/>
+  <circle cx="940" cy="480" r="180" fill="none" stroke="#4f7181" opacity=".32" stroke-width="2"/>
+  <path d="M90 420c250-35 425-105 655-125" fill="none" stroke="#4f7181" opacity=".62" stroke-width="3" stroke-linecap="round"/>
+  <text x="90" y="245" fill="#20282b" font-family="serif" font-size="108" font-weight="600" letter-spacing="14">海那边</text>
+  <text x="96" y="335" fill="#60696b" font-family="sans-serif" font-size="32" letter-spacing="6">CHINESE LESSONS IN DUBAI</text>
+</svg>
