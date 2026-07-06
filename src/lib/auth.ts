@@ -1,11 +1,13 @@
 import { betterAuth } from "better-auth";
+import { APIError } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { emailOTP } from "better-auth/plugins";
-import nodemailer from "nodemailer";
+import { eq } from "drizzle-orm";
 
+import { isTeacherEmail, normalizeEmail } from "@/lib/auth-policy";
 import { db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
-import { ensureHouseholdForUser } from "@/lib/portal/households";
+import { sendSignInOtp } from "@/lib/email";
 
 function runtimeValue(name: string, developmentFallback: string) {
   const configured = process.env[name]?.trim();
@@ -27,27 +29,9 @@ const authBaseUrl = runtimeValue(
   "BETTER_AUTH_URL",
   "http://localhost:3000",
 );
-const teacherEmail = runtimeValue("TEACHER_EMAIL", "teacher@localhost")
-  .trim()
-  .toLowerCase();
 const googleConfigured = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
 );
-
-const smtpUser = process.env.SMTP_USER?.trim();
-const smtpPassword = process.env.SMTP_PASSWORD?.trim();
-const smtpPort = Number(process.env.SMTP_PORT ?? 1025);
-const productionSmtp = process.env.NODE_ENV === "production";
-const mailer = nodemailer.createTransport({
-  host: process.env.SMTP_HOST ?? "localhost",
-  port: smtpPort,
-  secure: smtpPort === 465,
-  requireTLS: productionSmtp && smtpPort !== 465,
-  tls: productionSmtp ? { minVersion: "TLSv1.2" } : undefined,
-  ...(smtpUser && smtpPassword
-    ? { auth: { user: smtpUser, pass: smtpPassword } }
-    : {}),
-});
 
 export const auth = betterAuth({
   appName: "Hai Na Bian",
@@ -72,6 +56,12 @@ export const auth = betterAuth({
         defaultValue: "parent",
         input: false,
       },
+      loginEnabled: {
+        type: "boolean",
+        required: true,
+        defaultValue: false,
+        input: false,
+      },
     },
   },
   account: {
@@ -80,6 +70,7 @@ export const auth = betterAuth({
       enabled: true,
       allowDifferentEmails: false,
       trustedProviders: ["google"],
+      requireLocalEmailVerified: false,
     },
   },
   socialProviders: googleConfigured
@@ -87,11 +78,13 @@ export const auth = betterAuth({
         google: {
           clientId: process.env.GOOGLE_CLIENT_ID!,
           clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+          disableSignUp: true,
         },
       }
     : {},
   plugins: [
     emailOTP({
+      disableSignUp: true,
       otpLength: 6,
       expiresIn: 300,
       allowedAttempts: 3,
@@ -102,13 +95,7 @@ export const auth = betterAuth({
       },
       async sendVerificationOTP({ email, otp, type }) {
         if (type !== "sign-in") return;
-        await mailer.sendMail({
-          from: process.env.EMAIL_FROM ?? "Hai Na Bian <lessons@localhost>",
-          to: email,
-          subject: "Your Hai Na Bian sign-in code",
-          text: `Your sign-in code is ${otp}. It expires in 5 minutes.`,
-          html: `<p>Your Hai Na Bian sign-in code is:</p><p style="font-size:24px;letter-spacing:0.2em"><strong>${otp}</strong></p><p>It expires in 5 minutes.</p>`,
-        });
+        await sendSignInOtp(email, otp);
       },
     }),
   ],
@@ -116,22 +103,49 @@ export const auth = betterAuth({
     user: {
       create: {
         before: async (newUser) => {
-          const email = newUser.email.trim().toLowerCase();
+          const email = normalizeEmail(newUser.email);
+          if (!isTeacherEmail(email)) {
+            throw new APIError("FORBIDDEN", {
+              message:
+                "This email does not have an account. Ask the teacher to create one first.",
+            });
+          }
           return {
             data: {
               ...newUser,
               email,
               name: email,
               image: null,
-              role: email === teacherEmail ? "teacher" : "parent",
+              role: "teacher",
+              loginEnabled: true,
             },
           };
         },
-        after: async (newUser) => {
-          const role = "role" in newUser ? newUser.role : "parent";
-          if (role === "parent") {
-            await ensureHouseholdForUser(newUser.id);
+      },
+    },
+    session: {
+      create: {
+        before: async (newSession) => {
+          const [portalUser] = await db
+            .select({
+              email: schema.user.email,
+              role: schema.user.role,
+              loginEnabled: schema.user.loginEnabled,
+            })
+            .from(schema.user)
+            .where(eq(schema.user.id, newSession.userId))
+            .limit(1);
+
+          const validTeacher =
+            portalUser?.role !== "teacher" ||
+            isTeacherEmail(portalUser.email);
+          if (!portalUser?.loginEnabled || !validTeacher) {
+            throw new APIError("FORBIDDEN", {
+              message:
+                "This email does not have an active account. Ask the teacher to create one first.",
+            });
           }
+          return { data: newSession };
         },
       },
     },

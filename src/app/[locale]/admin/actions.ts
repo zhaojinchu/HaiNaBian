@@ -1,14 +1,17 @@
 "use server";
 
+import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
 import { requireTeacher } from "@/lib/auth-session";
+import { isTeacherEmail } from "@/lib/auth-policy";
 import { db } from "@/lib/db/client";
 import {
   auditLog,
   creditLedger,
+  householdMembers,
   lessonOfferings,
   lessonParticipants,
   lessons,
@@ -17,10 +20,10 @@ import {
   students,
   user,
 } from "@/lib/db/schema";
+import { sendInvoiceEmail } from "@/lib/email";
 import {
   assertSupportedCreditCount,
   parseAedToFils,
-  validateZiinaPaymentUrl,
 } from "@/lib/portal/domain";
 import { ensureHouseholdForUser } from "@/lib/portal/households";
 
@@ -75,13 +78,35 @@ export async function addLearnerAction(
         displayName: value(formData, "displayName"),
       });
 
-    const [parent] = await db
+    if (isTeacherEmail(parsed.email)) {
+      throw new Error("The teacher email cannot be used as a parent account.");
+    }
+
+    let [parent] = await db
       .select({ id: user.id, role: user.role })
       .from(user)
       .where(eq(user.email, parsed.email))
       .limit(1);
-    if (!parent || parent.role !== "parent") {
-      throw new Error("No registered parent account uses that email.");
+    if (!parent) {
+      [parent] = await db
+        .insert(user)
+        .values({
+          id: randomUUID(),
+          email: parsed.email,
+          name: parsed.email,
+          emailVerified: false,
+          image: null,
+          role: "parent",
+          loginEnabled: true,
+        })
+        .returning({ id: user.id, role: user.role });
+    } else if (parent.role !== "parent") {
+      throw new Error("That email is not a parent account.");
+    } else {
+      await db
+        .update(user)
+        .set({ loginEnabled: true })
+        .where(eq(user.id, parent.id));
     }
 
     const householdId = await ensureHouseholdForUser(parent.id);
@@ -101,7 +126,7 @@ export async function addLearnerAction(
     });
     revalidatePath(`/${locale}/admin`);
     revalidatePath(`/${locale}/account`);
-    return { ok: true, message: "Learner added." };
+    return { ok: true, message: "Parent account approved and learner added." };
   } catch (error) {
     return actionError(error);
   }
@@ -125,16 +150,19 @@ export async function createPackageAction(
       .min(1)
       .max(100)
       .parse(value(formData, "reference"));
-    const paymentUrl = validateZiinaPaymentUrl(
-      value(formData, "paymentUrl"),
-    );
-
     const [learner] = await db
       .select({
         id: students.id,
         householdId: students.householdId,
+        displayName: students.displayName,
+        parentEmail: user.email,
       })
       .from(students)
+      .innerJoin(
+        householdMembers,
+        eq(householdMembers.householdId, students.householdId),
+      )
+      .innerJoin(user, eq(user.id, householdMembers.userId))
       .where(and(eq(students.id, studentId), eq(students.active, true)))
       .limit(1);
     if (!learner) throw new Error("Select an active learner.");
@@ -154,7 +182,7 @@ export async function createPackageAction(
     const dueAt = new Date();
     dueAt.setUTCDate(dueAt.getUTCDate() + 14);
 
-    const packageId = await db.transaction(async (tx) => {
+    const created = await db.transaction(async (tx) => {
       const [createdPackage] = await tx
         .insert(packages)
         .values({
@@ -170,16 +198,18 @@ export async function createPackageAction(
         reason: "package_grant",
         createdBy: teacher.user.id,
       });
-      await tx.insert(paymentRecords).values({
-        householdId: learner.householdId,
-        studentId,
-        packageId: createdPackage.id,
-        externalReference,
-        paymentUrl,
-        amountFils,
-        dueAt,
-        createdBy: teacher.user.id,
-      });
+      const [payment] = await tx
+        .insert(paymentRecords)
+        .values({
+          householdId: learner.householdId,
+          studentId,
+          packageId: createdPackage.id,
+          externalReference,
+          amountFils,
+          dueAt,
+          createdBy: teacher.user.id,
+        })
+        .returning({ id: paymentRecords.id });
       await tx.insert(auditLog).values({
         actorId: teacher.user.id,
         action: "package.created",
@@ -190,15 +220,87 @@ export async function createPackageAction(
           paymentReference: externalReference,
         },
       });
-      return createdPackage.id;
+      return { packageId: createdPackage.id, paymentId: payment.id };
     });
+
+    let emailMessage = " Invoice emailed to the parent.";
+    try {
+      await sendInvoiceEmail({
+        to: learner.parentEmail,
+        learnerName: learner.displayName,
+        amountFils,
+        reference: externalReference,
+        dueAt,
+      });
+      await db
+        .update(paymentRecords)
+        .set({ emailSentAt: new Date() })
+        .where(eq(paymentRecords.id, created.paymentId));
+    } catch (error) {
+      console.error("Invoice email delivery failed", error);
+      emailMessage =
+        " The package was saved, but the invoice email failed; use Resend invoice.";
+    }
 
     revalidatePath(`/${locale}/admin`);
     revalidatePath(`/${locale}/account`);
     return {
       ok: true,
-      message: `Package ${packageId.slice(0, 8)} created with a 14-day invoice.`,
+      message: `Package ${created.packageId.slice(0, 8)} created with a 14-day bank-transfer invoice.${emailMessage}`,
     };
+  } catch (error) {
+    return actionError(error);
+  }
+}
+
+export async function resendInvoiceAction(
+  _state: AdminActionState,
+  formData: FormData,
+): Promise<AdminActionState> {
+  const locale = localeFrom(formData);
+  try {
+    const teacher = await requireTeacher(locale);
+    const paymentId = z.uuid().parse(value(formData, "paymentId"));
+    const [invoice] = await db
+      .select({
+        id: paymentRecords.id,
+        parentEmail: user.email,
+        learnerName: students.displayName,
+        amountFils: paymentRecords.amountFils,
+        reference: paymentRecords.externalReference,
+        dueAt: paymentRecords.dueAt,
+      })
+      .from(paymentRecords)
+      .innerJoin(students, eq(students.id, paymentRecords.studentId))
+      .innerJoin(
+        householdMembers,
+        eq(householdMembers.householdId, paymentRecords.householdId),
+      )
+      .innerJoin(user, eq(user.id, householdMembers.userId))
+      .where(eq(paymentRecords.id, paymentId))
+      .limit(1);
+    if (!invoice) throw new Error("Invoice not found.");
+
+    await sendInvoiceEmail({
+      to: invoice.parentEmail,
+      learnerName: invoice.learnerName,
+      amountFils: invoice.amountFils,
+      reference: invoice.reference,
+      dueAt: invoice.dueAt,
+    });
+    await db
+      .update(paymentRecords)
+      .set({ emailSentAt: new Date() })
+      .where(eq(paymentRecords.id, invoice.id));
+    await db.insert(auditLog).values({
+      actorId: teacher.user.id,
+      action: "invoice.emailed",
+      entityType: "payment",
+      entityId: invoice.id,
+      payload: { recipient: invoice.parentEmail },
+    });
+    revalidatePath(`/${locale}/admin`);
+    return { ok: true, message: "Invoice email sent." };
   } catch (error) {
     return actionError(error);
   }

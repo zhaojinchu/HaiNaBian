@@ -33,8 +33,8 @@ export function LoginForm({ locale, googleConfigured }: Props) {
     setCodeSent(true);
     setMessage(
       zh
-        ? "验证码已发送。开发环境中请在 Mailpit 查看。"
-        : "Code sent. In local development, open it in Mailpit.",
+        ? "如果该邮箱已由老师登记，验证码将会发送。开发环境中请在 Mailpit 查看。"
+        : "If the teacher has approved this email, its code will be sent. In local development, open it in Mailpit.",
     );
   }
 

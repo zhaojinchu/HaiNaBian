@@ -1,8 +1,8 @@
 # 海那边 lesson portal
 
-A bilingual Next.js website and local portal for one Chinese tutor. Parents can sign in to view teacher-managed learners, lesson balances, completed lessons, Ziina invoices, and a Google Appointment Schedule. The teacher manages all portal data.
+A bilingual Next.js website and portal for one Chinese tutor. Approved parents can sign in to view teacher-managed learners, lesson balances, completed lessons, bank-transfer invoices, and a Google Appointment Schedule. The teacher manages all portal data.
 
-The repository supports local development and a Docker-based production deployment through Cloudflare Tunnel. It intentionally does not integrate the Google Calendar API, Ziina API, or payment webhooks.
+The repository supports local development and a Docker-based production deployment through Cloudflare Tunnel. It intentionally does not integrate the Google Calendar API or bank APIs.
 
 ## Requirements
 
@@ -39,21 +39,22 @@ Copy `.env.example` to `.env.local`, then set:
 - `DATABASE_URL` — local PostgreSQL connection.
 - `BETTER_AUTH_SECRET` — at least 32 random characters.
 - `BETTER_AUTH_URL` — normally `http://localhost:3000`.
-- `TEACHER_EMAIL` — the one email that receives the `teacher` role when first registered.
 - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` — optional locally; both are needed for the Google button. Add `http://localhost:3000/api/auth/callback/google` as the authorized redirect URI in Google.
-- `GOOGLE_BOOKING_URL` — the published Google Appointment Schedule URL. Only Google Calendar booking hosts are embedded.
+- `GOOGLE_BOOKING_URL` — the public Google Appointment Schedule sharing URL.
+- `GOOGLE_BOOKING_EMBED_URL` — the long URL copied from Google Calendar's **Add to website** embed code.
+- `BANK_TRANSFER_INSTRUCTIONS` — bank details shown with invoices and included in invoice emails.
 - `SMTP_*` and `EMAIL_FROM` — the defaults target local Mailpit.
 
-If an email was registered before it was set as `TEACHER_EMAIL`, reset the local database or update the prototype record before signing in again.
+The only teacher account is `leiqi19791120@gmail.com`. Run the seed command after migrations to create or repair it.
 
 ## Local workflow
 
-1. The parent signs in using Google or a six-digit email code.
-2. The teacher signs in with the exact `TEACHER_EMAIL` and opens `/en/admin` or `/zh/admin`.
-3. The teacher adds a learner using the registered parent email.
-4. The teacher creates a one- or ten-lesson package and pastes its real `https://pay.ziina.com/...` invoice link.
+1. The teacher signs in as `leiqi19791120@gmail.com` and opens `/en/admin` or `/zh/admin`.
+2. The teacher creates an approved parent account and learner by entering the parent's email.
+3. That parent signs in using Google or a six-digit email code for the same email.
+4. The teacher creates a one- or ten-lesson package; its bank-transfer invoice is saved and emailed.
 5. Recording a lesson consumes one immutable ledger credit per selected learner. Voiding it adds a restoring ledger entry.
-6. Ziina status is updated manually after its notification.
+6. Payment status is updated manually after the bank transfer is received.
 
 Package use is independent of payment status. Google owns booking availability and conflict prevention; no bookings are copied to PostgreSQL.
 

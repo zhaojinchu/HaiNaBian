@@ -8,6 +8,13 @@
       "when": 1783247592602,
       "tag": "0000_portal",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783339118285,
+      "tag": "0001_closed-auth-bank-invoices",
+      "breakpoints": true
     }
   ]
 }

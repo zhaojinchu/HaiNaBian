@@ -45,7 +45,9 @@ Use the hex value as `POSTGRES_PASSWORD`. Put the identical value into the passw
 
 Replace every `change-me` value. In particular:
 
-- `TEACHER_EMAIL` must be the teacher's exact sign-in email before her first login.
+- The only teacher email is fixed as `leiqi19791120@gmail.com`.
+- Copy the URL from Google Calendar's **Add to website → Inline** code into `GOOGLE_BOOKING_EMBED_URL`; a `calendar.app.google` sharing link cannot be framed.
+- Set `BANK_TRANSFER_INSTRUCTIONS` to the account name, IBAN, and bank name that should appear on invoices.
 - `PRIVACY_CONTACT_EMAIL` must be a monitored address shown on the privacy page.
 - `EMAIL_FROM` should be an approved sender such as `Hai Na Bian <login@auth.hainabian.org>`.
 - `CLOUDFLARE_TUNNEL_TOKEN` is a secret and must not be committed.
@@ -78,7 +80,7 @@ docker compose --env-file .env.production -f compose.production.yaml --profile t
 docker compose --env-file .env.production -f compose.production.yaml --profile tools run --rm migrate npm run deploy:seed
 ```
 
-The seed operation is idempotent. It adds or refreshes the three lesson offerings without creating users or prototype family data.
+The seed operation is idempotent. It creates or repairs the fixed teacher account and refreshes the three lesson offerings without creating family data.
 
 ## 6. Start the website
 
@@ -109,14 +111,14 @@ The health response should be `{"status":"ok"}`.
 Perform these in order:
 
 1. Request an email OTP and confirm it arrives.
-2. Sign in using `TEACHER_EMAIL` and confirm the admin page opens.
-3. Register a separate parent test email.
-4. Add a learner to that parent and create a test package.
+2. Sign in using `leiqi19791120@gmail.com` and confirm the admin page opens.
+3. Create a separate parent test account and learner from the admin page.
+4. Sign in with that parent email and create a test package.
 5. Confirm the parent sees only that household's records.
 6. Record and void a lesson and verify the credit is deducted and restored.
 7. Test Google login using the same parent email used for OTP.
 8. Test the Google booking embed and direct fallback link in both languages.
-9. Test a genuine Ziina payment link without completing an unwanted payment.
+9. Confirm the portal invoice and invoice email contain the correct bank-transfer details.
 10. Confirm `/en/privacy` and `/zh/privacy` show the correct contact email.
 
 ## Updating the deployment

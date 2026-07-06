@@ -52,9 +52,7 @@ export const paymentStatusEnum = pgEnum("payment_status", [
   "overdue",
   "void",
 ]);
-export const paymentProviderEnum = pgEnum("payment_provider", [
-  "ziina_manual",
-]);
+export const paymentProviderEnum = pgEnum("payment_provider", ["bank_transfer"]);
 
 // Better Auth schema. Property names intentionally match Better Auth's models.
 export const user = pgTable("user", {
@@ -64,6 +62,7 @@ export const user = pgTable("user", {
   emailVerified: boolean("email_verified").default(false).notNull(),
   image: text("image"),
   role: userRoleEnum("role").default("parent").notNull(),
+  loginEnabled: boolean("login_enabled").default(false).notNull(),
   ...timestamps,
 });
 
@@ -293,14 +292,14 @@ export const paymentRecords = pgTable(
       .notNull()
       .references(() => packages.id),
     provider: paymentProviderEnum("provider")
-      .default("ziina_manual")
+      .default("bank_transfer")
       .notNull(),
     externalReference: text("external_reference").notNull(),
-    paymentUrl: text("payment_url"),
     amountFils: integer("amount_fils").notNull(),
     dueAt: timestamp("due_at", { withTimezone: true }).notNull(),
     status: paymentStatusEnum("status").default("open").notNull(),
     paidAt: timestamp("paid_at", { withTimezone: true }),
+    emailSentAt: timestamp("email_sent_at", { withTimezone: true }),
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),

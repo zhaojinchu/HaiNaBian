@@ -6,6 +6,7 @@ import {
   addLearnerAction,
   createPackageAction,
   recordLessonAction,
+  resendInvoiceAction,
   type AdminActionState,
 } from "@/app/[locale]/admin/actions";
 
@@ -20,6 +21,38 @@ function Status({ state }: { state: AdminActionState }) {
     >
       {state.message}
     </p>
+  );
+}
+
+export function InvoiceEmailButton({
+  locale,
+  paymentId,
+}: {
+  locale: "en" | "zh";
+  paymentId: string;
+}) {
+  const [state, action, pending] = useActionState(
+    resendInvoiceAction,
+    initialState,
+  );
+  return (
+    <form action={action} className="mt-3">
+      <input type="hidden" name="locale" value={locale} />
+      <input type="hidden" name="paymentId" value={paymentId} />
+      <button
+        className="rounded-full border border-accent px-4 py-2 text-sm text-accent-dark disabled:opacity-60"
+        disabled={pending}
+      >
+        {pending
+          ? locale === "zh"
+            ? "发送中…"
+            : "Sending…"
+          : locale === "zh"
+            ? "重新发送发票"
+            : "Resend invoice"}
+      </button>
+      <Status state={state} />
+    </form>
   );
 }
 
@@ -61,12 +94,12 @@ export function AdminForms({
     <div className="grid gap-6 xl:grid-cols-3">
       <section className="rounded-3xl border border-line bg-white-soft p-6">
         <h2 className="font-display text-2xl">
-          {zh ? "添加学生" : "Add learner"}
+          {zh ? "创建家长账户并添加学生" : "Create parent account and learner"}
         </h2>
         <p className="mt-2 text-sm text-ink-soft">
           {zh
-            ? "家长必须先使用该邮箱登录注册。"
-            : "The parent must first register by signing in with this email."}
+            ? "输入获准登录的家长邮箱。家长随后可使用 Google 或邮箱验证码登录。"
+            : "Enter the approved parent email. They can then use Google or an email code to sign in."}
         </p>
         <form action={learnerAction} className="mt-5 space-y-4">
           <input type="hidden" name="locale" value={locale} />
@@ -149,21 +182,11 @@ export function AdminForms({
               <input className="field" name="reference" required maxLength={100} />
             </label>
           </div>
-          <label className="block">
-            <span className="mb-1 block text-sm">Ziina URL</span>
-            <input
-              className="field"
-              type="url"
-              name="paymentUrl"
-              placeholder="https://pay.ziina.com/..."
-              required
-            />
-          </label>
           <button
             className="min-h-11 w-full rounded-full bg-accent px-4 text-white disabled:opacity-60"
             disabled={packagePending || learners.length === 0}
           >
-            {packagePending ? (zh ? "正在创建…" : "Creating…") : zh ? "创建套餐" : "Create package"}
+            {packagePending ? (zh ? "正在创建…" : "Creating…") : zh ? "创建并发送发票" : "Create and email invoice"}
           </button>
         </form>
         <Status state={packageState} />

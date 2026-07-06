@@ -1,9 +1,11 @@
 import "./load-env";
 
-import { eq } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+import { and, eq, ne } from "drizzle-orm";
 
+import { TEACHER_EMAIL } from "../src/lib/auth-policy";
 import { db, pool } from "../src/lib/db/client";
-import { lessonOfferings } from "../src/lib/db/schema";
+import { lessonOfferings, user } from "../src/lib/db/schema";
 
 const offerings = [
   {
@@ -27,6 +29,33 @@ const offerings = [
 ];
 
 export async function seed() {
+  await db
+    .update(user)
+    .set({ role: "parent", loginEnabled: false })
+    .where(and(eq(user.role, "teacher"), ne(user.email, TEACHER_EMAIL)));
+
+  const [teacher] = await db
+    .select({ id: user.id })
+    .from(user)
+    .where(eq(user.email, TEACHER_EMAIL))
+    .limit(1);
+  if (teacher) {
+    await db
+      .update(user)
+      .set({ role: "teacher", loginEnabled: true })
+      .where(eq(user.id, teacher.id));
+  } else {
+    await db.insert(user).values({
+      id: randomUUID(),
+      email: TEACHER_EMAIL,
+      name: TEACHER_EMAIL,
+      emailVerified: false,
+      image: null,
+      role: "teacher",
+      loginEnabled: true,
+    });
+  }
+
   for (const offering of offerings) {
     const [existing] = await db
       .select({ id: lessonOfferings.id })
@@ -48,7 +77,7 @@ export async function seed() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   seed()
     .then(() => {
-      console.log("Seeded lesson offerings.");
+      console.log("Seeded the teacher account and lesson offerings.");
     })
     .finally(() => pool.end());
 }

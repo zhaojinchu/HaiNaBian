@@ -8,8 +8,9 @@ const required = [
   "BETTER_AUTH_URL",
   "GOOGLE_CLIENT_ID",
   "GOOGLE_CLIENT_SECRET",
-  "TEACHER_EMAIL",
   "GOOGLE_BOOKING_URL",
+  "GOOGLE_BOOKING_EMBED_URL",
+  "BANK_TRANSFER_INSTRUCTIONS",
   "SMTP_HOST",
   "SMTP_PORT",
   "SMTP_USER",
@@ -95,7 +96,24 @@ if (process.env.GOOGLE_BOOKING_URL) {
   }
 }
 
-for (const name of ["TEACHER_EMAIL", "PRIVACY_CONTACT_EMAIL"]) {
+if (process.env.GOOGLE_BOOKING_EMBED_URL) {
+  try {
+    const embedUrl = new URL(process.env.GOOGLE_BOOKING_EMBED_URL);
+    if (
+      embedUrl.protocol !== "https:" ||
+      embedUrl.hostname !== "calendar.google.com" ||
+      !embedUrl.pathname.startsWith("/calendar/appointments/schedules/")
+    ) {
+      errors.push(
+        "GOOGLE_BOOKING_EMBED_URL must be the URL from Google Calendar's appointment schedule embed code",
+      );
+    }
+  } catch {
+    errors.push("GOOGLE_BOOKING_EMBED_URL must be a valid URL");
+  }
+}
+
+for (const name of ["PRIVACY_CONTACT_EMAIL"]) {
   if (
     process.env[name] &&
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(process.env[name])

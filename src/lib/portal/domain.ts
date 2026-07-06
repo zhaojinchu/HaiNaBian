@@ -1,5 +1,4 @@
 export const SUPPORTED_PACKAGE_CREDITS = [1, 10] as const;
-export const ZIINA_PAYMENT_HOSTS = new Set(["pay.ziina.com"]);
 
 export function assertSupportedCreditCount(value: number) {
   if (!SUPPORTED_PACKAGE_CREDITS.includes(value as 1 | 10)) {
@@ -35,24 +34,6 @@ export function formatAed(amountFils: number, locale: string) {
   }).format(amountFils / 100);
 }
 
-export function validateZiinaPaymentUrl(value: string) {
-  let url: URL;
-  try {
-    url = new URL(value);
-  } catch {
-    throw new Error("Enter a valid Ziina payment URL.");
-  }
-
-  if (
-    url.protocol !== "https:" ||
-    !ZIINA_PAYMENT_HOSTS.has(url.hostname.toLowerCase())
-  ) {
-    throw new Error("Payment links must use https://pay.ziina.com.");
-  }
-
-  return url.toString();
-}
-
 export function isGoogleBookingUrl(value: string) {
   try {
     const url = new URL(value);
@@ -60,6 +41,19 @@ export function isGoogleBookingUrl(value: string) {
       url.protocol === "https:" &&
       (url.hostname === "calendar.google.com" ||
         url.hostname === "calendar.app.google")
+    );
+  } catch {
+    return false;
+  }
+}
+
+export function isGoogleBookingEmbedUrl(value: string) {
+  try {
+    const url = new URL(value);
+    return (
+      url.protocol === "https:" &&
+      url.hostname === "calendar.google.com" &&
+      url.pathname.startsWith("/calendar/appointments/schedules/")
     );
   } catch {
     return false;

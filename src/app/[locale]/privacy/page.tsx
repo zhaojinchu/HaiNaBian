@@ -33,8 +33,8 @@ const copy = {
         title: "Services involved",
         paragraphs: [
           "Google may process information when Google sign-in or the Google Calendar booking page is used. The booking page is operated by Google and may request a name and email address.",
-          "Our transactional email provider processes email addresses to deliver one-time sign-in codes. Ziina processes information entered on its hosted payment page. Cloudflare and our hosting provider process limited technical information needed to deliver and protect the website.",
-          "These services operate under their own privacy terms. Hai Na Bian does not receive card details from Ziina and does not copy Google Calendar bookings into its portal database.",
+          "Our transactional email provider processes email addresses to deliver sign-in codes and invoices. Cloudflare and our hosting provider process limited technical information needed to deliver and protect the website.",
+          "These services operate under their own privacy terms. Bank transfers take place outside this website, and Hai Na Bian does not copy Google Calendar bookings into its portal database.",
         ],
       },
       {
@@ -88,8 +88,8 @@ const copy = {
         title: "所使用的服务",
         paragraphs: [
           "使用 Google 登录或 Google 日历预约页面时，Google 可能处理相关信息。预约页面由 Google 提供，并可能要求姓名和电子邮箱。",
-          "邮件服务商会处理电子邮箱以发送一次性登录验证码。Ziina 会处理用户在其付款页面填写的信息。Cloudflare 和网站托管服务商会处理提供及保护网站所需的有限技术信息。",
-          "这些服务受其各自的隐私条款约束。海那边不会从 Ziina 获取银行卡资料，也不会把 Google 日历预约复制到网站数据库。",
+          "邮件服务商会处理电子邮箱以发送一次性登录验证码和发票。Cloudflare 和网站托管服务商会处理提供及保护网站所需的有限技术信息。",
+          "这些服务受其各自的隐私条款约束。银行转账在本网站之外进行，海那边也不会把 Google 日历预约复制到网站数据库。",
         ],
       },
       {

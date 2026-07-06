@@ -3,9 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   assertSupportedCreditCount,
   derivePaymentStatus,
+  isGoogleBookingEmbedUrl,
+  isGoogleBookingUrl,
   parseAedToFils,
   remainingCredits,
-  validateZiinaPaymentUrl,
 } from "./domain";
 
 describe("portal rules", () => {
@@ -40,16 +41,16 @@ describe("portal rules", () => {
     expect(() => parseAedToFils("12.345")).toThrow();
   });
 
-  it("only accepts the approved Ziina payment host over HTTPS", () => {
-    expect(validateZiinaPaymentUrl("https://pay.ziina.com/example")).toBe(
-      "https://pay.ziina.com/example",
+  it("separates Google share links from embeddable schedule URLs", () => {
+    expect(isGoogleBookingUrl("https://calendar.app.google/abc")).toBe(true);
+    expect(
+      isGoogleBookingEmbedUrl(
+        "https://calendar.google.com/calendar/appointments/schedules/abc",
+      ),
+    ).toBe(true);
+    expect(isGoogleBookingEmbedUrl("https://calendar.app.google/abc")).toBe(
+      false,
     );
-    expect(() =>
-      validateZiinaPaymentUrl("https://pay.ziina.com.evil.test/example"),
-    ).toThrow();
-    expect(() =>
-      validateZiinaPaymentUrl("http://pay.ziina.com/example"),
-    ).toThrow();
   });
 
   it("derives overdue presentation without mutating the stored record", () => {

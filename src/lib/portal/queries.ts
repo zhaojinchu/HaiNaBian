@@ -96,7 +96,6 @@ export async function getParentDashboard(userId: string) {
       studentName: students.displayName,
       amountFils: paymentRecords.amountFils,
       externalReference: paymentRecords.externalReference,
-      paymentUrl: paymentRecords.paymentUrl,
       dueAt: paymentRecords.dueAt,
       status: paymentRecords.status,
       paidAt: paymentRecords.paidAt,
@@ -123,7 +122,7 @@ export async function getAdminDashboard() {
     })
     .from(user)
     .leftJoin(householdMembers, eq(householdMembers.userId, user.id))
-    .where(eq(user.role, "parent"))
+    .where(and(eq(user.role, "parent"), eq(user.loginEnabled, true)))
     .orderBy(asc(user.email));
 
   const learnerRows = await db
@@ -187,7 +186,7 @@ export async function getAdminDashboard() {
       reference: paymentRecords.externalReference,
       dueAt: paymentRecords.dueAt,
       status: paymentRecords.status,
-      paymentUrl: paymentRecords.paymentUrl,
+      emailSentAt: paymentRecords.emailSentAt,
     })
     .from(paymentRecords)
     .innerJoin(students, eq(students.id, paymentRecords.studentId))

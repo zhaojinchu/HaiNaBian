@@ -3,6 +3,7 @@ import { requirePortalUser } from "@/lib/auth-session";
 import {
   derivePaymentStatus,
   formatAed,
+  isGoogleBookingEmbedUrl,
   isGoogleBookingUrl,
 } from "@/lib/portal/domain";
 import { getParentDashboard } from "@/lib/portal/queries";
@@ -60,13 +61,16 @@ export default async function AccountPage({
   const bookingUrl = isGoogleBookingUrl(configuredBookingUrl)
     ? configuredBookingUrl
     : null;
-  const bookingEmbedUrl = bookingUrl
+  const configuredEmbedUrl = process.env.GOOGLE_BOOKING_EMBED_URL ?? "";
+  const bookingEmbedUrl = isGoogleBookingEmbedUrl(configuredEmbedUrl)
     ? (() => {
-        const url = new URL(bookingUrl);
+        const url = new URL(configuredEmbedUrl);
         url.searchParams.set("gv", "true");
         return url.toString();
       })()
     : null;
+  const bankTransferInstructions =
+    process.env.BANK_TRANSFER_INSTRUCTIONS?.trim();
 
   return (
     <section className="section">
@@ -148,7 +152,6 @@ export default async function AccountPage({
                     <th className="pb-3 font-medium">{zh ? "金额" : "Amount"}</th>
                     <th className="pb-3 font-medium">{zh ? "到期日" : "Due"}</th>
                     <th className="pb-3 font-medium">{zh ? "状态" : "Status"}</th>
-                    <th className="pb-3 font-medium" />
                   </tr>
                 </thead>
                 <tbody>
@@ -164,18 +167,6 @@ export default async function AccountPage({
                         <td className="py-4">{formatAed(payment.amountFils, locale)}</td>
                         <td className="py-4">{dubaiDate(payment.dueAt, locale)}</td>
                         <td className="py-4 capitalize">{status}</td>
-                        <td className="py-4 text-right">
-                          {payment.paymentUrl && status !== "paid" && status !== "void" ? (
-                            <a
-                              href={payment.paymentUrl}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex rounded-full bg-accent px-4 py-2 text-white"
-                            >
-                              {zh ? "使用 Ziina 付款" : "Pay with Ziina"}
-                            </a>
-                          ) : null}
-                        </td>
                       </tr>
                     );
                   })}
@@ -185,6 +176,21 @@ export default async function AccountPage({
           ) : (
             <p className="mt-4 text-ink-soft">{zh ? "暂无付款记录。" : "No invoices have been added yet."}</p>
           )}
+          {dashboard.payments.length && bankTransferInstructions ? (
+            <div className="mt-6 rounded-xl bg-paper p-4">
+              <h3 className="font-medium">
+                {zh ? "银行转账信息" : "Bank transfer details"}
+              </h3>
+              <p className="mt-2 whitespace-pre-line text-sm text-ink-soft">
+                {bankTransferInstructions}
+              </p>
+              <p className="mt-2 text-sm text-ink-soft">
+                {zh
+                  ? "转账时请填写上方发票编号，老师收到款项后会更新状态。"
+                  : "Use the invoice reference with your transfer. The teacher will update its status after payment is received."}
+              </p>
+            </div>
+          ) : null}
         </section>
 
         <section className="mt-6 rounded-3xl border border-line bg-white-soft p-6 sm:p-8">
@@ -210,7 +216,7 @@ export default async function AccountPage({
               ? "预约后时段会立即保留。老师随后联系您确认线上或到老师家上课等细节；地点暂定。"
               : "Your time is reserved immediately. The teacher will contact you afterward to confirm online versus home and other details; location is to be confirmed."}
           </p>
-          {bookingUrl && bookingEmbedUrl ? (
+          {bookingEmbedUrl ? (
             <>
               <iframe
                 src={bookingEmbedUrl}
@@ -218,7 +224,7 @@ export default async function AccountPage({
                 className="mt-6 h-[44rem] w-full rounded-2xl border border-line bg-white"
                 loading="lazy"
               />
-              <p className="mt-4">
+              {bookingUrl ? <p className="mt-4">
                 <a
                   href={bookingUrl}
                   target="_blank"
@@ -227,8 +233,17 @@ export default async function AccountPage({
                 >
                   {zh ? "如果预约页面无法显示，请直接打开。" : "Open the booking page directly if the embed does not load."}
                 </a>
-              </p>
+              </p> : null}
             </>
+          ) : bookingUrl ? (
+            <a
+              href={bookingUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="mt-6 inline-flex rounded-full bg-accent px-5 py-3 text-white"
+            >
+              {zh ? "打开 Google 预约页面" : "Open Google booking page"}
+            </a>
           ) : (
             <p className="mt-5 rounded-xl bg-paper p-4 text-ink-soft">
               {zh ? "老师尚未添加预约页面。" : "The teacher has not added the booking page yet."}

@@ -2,7 +2,10 @@ import {
   updatePaymentStatusAction,
   voidLessonAction,
 } from "@/app/[locale]/admin/actions";
-import { AdminForms } from "@/components/portal/AdminForms";
+import {
+  AdminForms,
+  InvoiceEmailButton,
+} from "@/components/portal/AdminForms";
 import { SignOutButton } from "@/components/portal/SignOutButton";
 import { requireTeacher } from "@/lib/auth-session";
 import {
@@ -122,11 +125,13 @@ export default async function AdminPage({
                             {zh ? "到期" : "Due"} {dubaiDate(payment.dueAt, locale)} · <span className="capitalize">{shownStatus}</span>
                           </p>
                         </div>
-                        {payment.paymentUrl ? (
-                          <a className="text-sm text-accent-dark underline" href={payment.paymentUrl} target="_blank" rel="noreferrer">
-                            {zh ? "打开 Ziina" : "Open Ziina"}
-                          </a>
-                        ) : null}
+                        <p className="text-xs text-ink-soft">
+                          {payment.emailSentAt
+                            ? `${zh ? "已发送邮件" : "Email sent"} ${dubaiDate(payment.emailSentAt, locale, true)}`
+                            : zh
+                              ? "尚未发送邮件"
+                              : "Email not sent"}
+                        </p>
                       </div>
                       <form action={updatePaymentStatusAction} className="mt-3 flex gap-2">
                         <input type="hidden" name="locale" value={locale} />
@@ -141,6 +146,10 @@ export default async function AdminPage({
                           {zh ? "更新" : "Update"}
                         </button>
                       </form>
+                      <InvoiceEmailButton
+                        locale={locale}
+                        paymentId={payment.id}
+                      />
                     </div>
                   );
                 })}
