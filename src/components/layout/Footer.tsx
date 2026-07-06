@@ -11,6 +11,7 @@ export async function Footer() {
     ["/about", nav("about")],
     ["/pricing", nav("pricing")],
     ["/contact", nav("contact")],
+    ["/privacy", nav("privacy")],
   ] as const;
 
   return (

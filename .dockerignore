@@ -1,0 +1,13 @@
+.git
+.github
+.next
+node_modules
+*.log
+*.tsbuildinfo
+.DS_Store
+.env
+.env.*
+!.env.example
+!.env.production.example
+backups
+coverage

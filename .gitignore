@@ -7,3 +7,4 @@
 *.tsbuildinfo
 .env*
 !.env.example
+!.env.production.example

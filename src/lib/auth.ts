@@ -7,17 +7,43 @@ import { db } from "@/lib/db/client";
 import * as schema from "@/lib/db/schema";
 import { ensureHouseholdForUser } from "@/lib/portal/households";
 
-const teacherEmail = process.env.TEACHER_EMAIL?.trim().toLowerCase();
+function runtimeValue(name: string, developmentFallback: string) {
+  const configured = process.env[name]?.trim();
+  if (configured) return configured;
+
+  const productionBuild =
+    process.env.NEXT_PHASE === "phase-production-build";
+  if (process.env.NODE_ENV === "production" && !productionBuild) {
+    throw new Error(`${name} is required in production.`);
+  }
+  return developmentFallback;
+}
+
+const authSecret = runtimeValue(
+  "BETTER_AUTH_SECRET",
+  "local-development-only-secret-change-before-sharing",
+);
+const authBaseUrl = runtimeValue(
+  "BETTER_AUTH_URL",
+  "http://localhost:3000",
+);
+const teacherEmail = runtimeValue("TEACHER_EMAIL", "teacher@localhost")
+  .trim()
+  .toLowerCase();
 const googleConfigured = Boolean(
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
 );
 
 const smtpUser = process.env.SMTP_USER?.trim();
 const smtpPassword = process.env.SMTP_PASSWORD?.trim();
+const smtpPort = Number(process.env.SMTP_PORT ?? 1025);
+const productionSmtp = process.env.NODE_ENV === "production";
 const mailer = nodemailer.createTransport({
   host: process.env.SMTP_HOST ?? "localhost",
-  port: Number(process.env.SMTP_PORT ?? 1025),
-  secure: false,
+  port: smtpPort,
+  secure: smtpPort === 465,
+  requireTLS: productionSmtp && smtpPort !== 465,
+  tls: productionSmtp ? { minVersion: "TLSv1.2" } : undefined,
   ...(smtpUser && smtpPassword
     ? { auth: { user: smtpUser, pass: smtpPassword } }
     : {}),
@@ -25,10 +51,8 @@ const mailer = nodemailer.createTransport({
 
 export const auth = betterAuth({
   appName: "Hai Na Bian",
-  baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3000",
-  secret:
-    process.env.BETTER_AUTH_SECRET ??
-    "local-development-secret-change-before-sharing",
+  baseURL: authBaseUrl,
+  secret: authSecret,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema,

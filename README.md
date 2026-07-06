@@ -1,8 +1,8 @@
-# 海那边 local lesson portal
+# 海那边 lesson portal
 
 A bilingual Next.js website and local portal for one Chinese tutor. Parents can sign in to view teacher-managed learners, lesson balances, completed lessons, Ziina invoices, and a Google Appointment Schedule. The teacher manages all portal data.
 
-This iteration is intentionally local-only. It contains no deployment, production email, Calendar API, Ziina API, or webhook integration.
+The repository supports local development and a Docker-based production deployment through Cloudflare Tunnel. It intentionally does not integrate the Google Calendar API, Ziina API, or payment webhooks.
 
 ## Requirements
 
@@ -78,3 +78,15 @@ npm run build
 ```
 
 AED is stored as integer fils. Database timestamps use UTC-capable `timestamptz`; portal dates are displayed in `Asia/Dubai`.
+
+## Production deployment
+
+Production uses a separate Compose stack with:
+
+- A non-root Next.js standalone container.
+- PostgreSQL on an internal-only Docker network and persistent volume.
+- Cloudflare Tunnel with no public application or database ports.
+- Strict production environment validation.
+- Database-aware container health checks.
+
+Follow [DEPLOYMENT.md](./DEPLOYMENT.md) exactly. Do not use the local `compose.yaml` on the VPS.

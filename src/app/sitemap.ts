@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const base = process.env.NEXT_PUBLIC_SITE_URL ?? "https://hainabian.example";
-  const routes = ["", "/about", "/pricing", "/contact"];
+  const routes = ["", "/about", "/pricing", "/contact", "/privacy"];
 
   return routes.flatMap((route) =>
     (["zh", "en"] as const).map((locale) => ({
